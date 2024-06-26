@@ -581,7 +581,7 @@ impl Object {
         if let Some(doc) = &self.doc {
             dst.doc(&doc);
         }
-        dst.line("#[derive(Debug, Clone, Deserialize, Serialize)]");
+        dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]");
         let mut pending = Vec::new();
         if self.fields.is_empty() {
             dst.line(format!("pub struct {};", name));
@@ -598,6 +598,7 @@ impl Object {
                 if field.required {
                     dst.indented(format!("pub {}: {},", clean_name, ty));
                 } else {
+                    dst.indented("#[serde(skip_serializing_if = \"Option::is_none\")]");
                     dst.indented("#[serde(default)]");
                     dst.indented(format!("pub {}: Option<{}>,", clean_name, ty));
                 }
