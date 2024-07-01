@@ -801,7 +801,7 @@ pub struct DataBreakpointInfoArguments {
     #[serde(default)]
     pub variables_reference: Option<u64>,
     /// The name of the variable's child to obtain data breakpoint information for.
-    /// If `variablesReference` isn't specified, this can be an expression.
+    /// If `variablesReference` isn't specified, this can be an expression, or an address if `asAddress` is also true.
     #[serde(rename = "name")]
     pub name: String,
     /// When `name` is an expression, evaluate it in the scope of this stack frame. If not specified, the expression is evaluated in the global scope. When `variablesReference` is specified, this property has no effect.
@@ -809,6 +809,21 @@ pub struct DataBreakpointInfoArguments {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub frame_id: Option<u64>,
+    /// If specified, a debug adapter should return information for the range of memory extending `bytes` number of bytes from the address or variable specified by `name`. Breakpoints set using the resulting data ID should pause on data access anywhere within that range.
+    ///
+    /// Clients may set this property only if the `supportsDataBreakpointBytes` capability is true.
+    #[serde(rename = "bytes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub bytes: Option<u64>,
+    /// If `true`, the `name` is a memory address and the debugger should interpret it as a decimal value, or hex value if it is prefixed with `0x`.
+    ///
+    /// Clients may set this property only if the `supportsDataBreakpointBytes`
+    /// capability is true.
+    #[serde(rename = "asAddress")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub as_address: Option<bool>,
     /// The mode of the desired breakpoint. If defined, this must be one of the `breakpointModes` the debug adapter advertised in its `Capabilities`.
     #[serde(rename = "mode")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1266,6 +1281,23 @@ pub struct EvaluateArguments {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub frame_id: Option<u64>,
+    /// The contextual line where the expression should be evaluated. In the 'hover' context, this should be set to the start of the expression being hovered.
+    #[serde(rename = "line")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub line: Option<u64>,
+    /// The contextual column where the expression should be evaluated. This may be provided if `line` is also provided.
+    ///
+    /// It is measured in UTF-16 code units and the client capability `columnsStartAt1` determines whether it is 0- or 1-based.
+    #[serde(rename = "column")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub column: Option<u64>,
+    /// The contextual source in which the `line` is found. This must be provided if `line` is provided.
+    #[serde(rename = "source")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub source: Option<Source>,
     /// The context in which the evaluate request is used.
     #[serde(rename = "context")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1817,6 +1849,11 @@ pub struct Capabilities {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub supports_single_thread_execution_requests: Option<bool>,
+    /// The debug adapter supports the `asAddress` and `bytes` fields in the `dataBreakpointInfo` request.
+    #[serde(rename = "supportsDataBreakpointBytes")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub supports_data_breakpoint_bytes: Option<bool>,
     /// Modes of breakpoints supported by the debug adapter, such as 'hardware' or 'software'. If present, the client may allow the user to select a mode and include it in its `setBreakpoints` request.
     ///
     /// Clients may present the first applicable mode in this array as the 'default' mode in gestures that set breakpoints.
@@ -2202,6 +2239,9 @@ pub enum ScopePresentationHint {
     /// Scope contains registers. Only a single `registers` scope should be returned from a `scopes` request.
     #[serde(rename = "registers")]
     Registers,
+    /// Scope contains one or more return values.
+    #[serde(rename = "returnValue")]
+    ReturnValue,
     #[serde(other)]
     Unknown,
 }
@@ -3075,7 +3115,7 @@ pub enum BreakpointModeApplicability {
     /// In exception breakpoints applied in the `ExceptionFilterOptions`
     #[serde(rename = "exception")]
     Exception,
-    /// In data breakpoints requested in the the `DataBreakpointInfo` request
+    /// In data breakpoints requested in the `DataBreakpointInfo` request
     #[serde(rename = "data")]
     Data,
     /// In `InstructionBreakpoint`s
