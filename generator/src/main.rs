@@ -142,8 +142,15 @@ fn write_events(types: &[ProtocolType]) -> String {
             continue;
         }
         let name = o.find_field("event").unwrap().ty.as_enum().single_value();
+
         let body = match &o.find_field("body").unwrap().ty {
-            Type::Any => "()".to_owned(),
+            Type::Any => {
+                if name == "initialized" {
+                    format!("Option<crate::Capabilities>")
+                } else {
+                    "()".to_owned()
+                }
+            }
             Type::Basic(args) => format!("crate::{args}"),
             Type::Object(_) => format!("crate::{}", ty.name),
             _ => panic!("bad body type for {}", ty.name),

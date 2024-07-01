@@ -23,7 +23,7 @@ pub enum Initialized {}
 
 impl Event for Initialized {
     const EVENT: &'static str = "initialized";
-    type Body = ();
+    type Body = Option<crate::Capabilities>;
 }
 
 /// The event indicates that the execution of the debuggee has stopped due to some condition.
