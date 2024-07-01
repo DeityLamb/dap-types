@@ -3086,9 +3086,6 @@ pub enum BreakpointModeApplicability {
 }
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone, Deserialize, Serialize)]
-pub struct ThreadId(pub u64);
-
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum ModuleId {
     Number(u32),
