@@ -68,7 +68,6 @@ const BLACKLISTED_TYPES: &[&str] = &[
     "Request",
     "Event",
     "Response",
-    "ErrorResponse",
     "RestartArguments",
     "LaunchRequestArguments",
     "AttachRequestArguments",

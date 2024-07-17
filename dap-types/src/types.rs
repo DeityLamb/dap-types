@@ -3,6 +3,16 @@
 
 use serde::{Deserialize, Serialize};
 
+/// On error (whenever `success` is false), the body can provide more details.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct ErrorResponse {
+    /// A structured error message.
+    #[serde(rename = "error")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub error: Option<Message>,
+}
+
 /// Arguments for `cancel` request.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct CancelArguments {
