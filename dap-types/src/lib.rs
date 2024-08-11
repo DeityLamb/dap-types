@@ -11,6 +11,8 @@ pub mod messages;
 pub mod requests;
 mod types;
 
+use std::cmp::Ordering;
+
 pub use crate::types::*;
 
 impl Default for Capabilities {
@@ -58,5 +60,29 @@ impl Default for Capabilities {
             supports_value_formatting_options: None,
             supports_write_memory_request: None,
         }
+    }
+}
+
+impl Ord for StackFrame {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+    }
+}
+
+impl PartialOrd for StackFrame {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Scope {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.variables_reference.cmp(&other.variables_reference)
+    }
+}
+
+impl PartialOrd for Scope {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
