@@ -587,7 +587,7 @@ impl Object {
         if let Some(doc) = &self.doc {
             dst.doc(&doc);
         }
-        dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]");
+        dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]");
         let mut pending = Vec::new();
         if self.fields.is_empty() {
             dst.line(format!("pub struct {};", name));
