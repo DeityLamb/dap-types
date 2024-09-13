@@ -1,63 +1,74 @@
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-#[derive(Deserialize, Serialize)]
-pub struct Request<T> {
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
+
+use crate::{
+    BreakpointEvent, Capabilities, CapabilitiesEvent, ContinuedEvent, ExitedEvent,
+    InvalidatedEvent, LoadedSourceEvent, MemoryEvent, ModuleEvent, OutputEvent, ProcessEvent,
+    ProgressEndEvent, ProgressStartEvent, ProgressUpdateEvent, StoppedEvent, TerminatedEvent,
+    ThreadEvent,
+};
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum Message {
+    Event(Box<Events>),
+    Response(Response),
+    Request(Request),
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct Request {
     pub seq: u64,
-    #[serde(rename = "type")]
-    pub type_: RequestTag,
     pub command: String,
-    #[serde(default)]
-    pub body: T,
+    #[serde(default, deserialize_with = "deserialize_empty_object")]
+    pub arguments: Option<Value>,
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct Event<T> {
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct Response {
     pub seq: u64,
-    #[serde(rename = "type")]
-    pub type_: EventTag,
-    pub event: String,
-    #[serde(default)]
-    pub body: T,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Response<T> {
-    pub seq: u64,
-    #[serde(rename = "type")]
-    pub type_: ResponseTag,
     pub request_seq: u64,
     pub success: bool,
     pub command: String,
-    #[serde(default)]
-    pub body: T,
+    #[serde(default, deserialize_with = "deserialize_empty_object")]
+    pub body: Option<Value>,
 }
 
-macro_rules! tag {
-    (pub struct $name:ident => $impl_name:ident $impl_string:tt $tag:tt;) => {
-        #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
-        #[serde(from = $impl_string)]
-        pub struct $name;
-
-        impl From<$impl_name> for $name {
-            fn from(_: $impl_name) -> Self {
-                $name
-            }
-        }
-
-        impl From<$name> for $impl_name {
-            fn from(_: $name) -> Self {
-                $impl_name::Tag
-            }
-        }
-
-        #[derive(Deserialize, Serialize)]
-        enum $impl_name {
-            #[serde(rename = $tag)]
-            Tag,
-        }
-    };
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[serde(tag = "event", content = "body")]
+#[serde(rename_all = "camelCase")]
+pub enum Events {
+    Initialized(Option<Capabilities>),
+    Stopped(StoppedEvent),
+    Continued(ContinuedEvent),
+    Exited(ExitedEvent),
+    Terminated(Option<TerminatedEvent>),
+    Thread(ThreadEvent),
+    Output(OutputEvent),
+    Breakpoint(BreakpointEvent),
+    Module(ModuleEvent),
+    LoadedSource(LoadedSourceEvent),
+    Process(ProcessEvent),
+    Capabilities(CapabilitiesEvent),
+    ProgressStart(ProgressStartEvent),
+    ProgressUpdate(ProgressUpdateEvent),
+    ProgressEnd(ProgressEndEvent),
+    Invalidated(InvalidatedEvent),
+    Memory(MemoryEvent),
+    #[serde(untagged)]
+    Other(HashMap<String, Value>),
 }
 
-tag!(pub struct RequestTag => RequestTagImpl "RequestTagImpl" "request";);
-tag!(pub struct ResponseTag => ResponseTagImpl "ResponseTagImpl" "response";);
-tag!(pub struct EventTag => EventTagImpl "EventTagImpl" "event";);
+fn deserialize_empty_object<'de, D>(deserializer: D) -> Result<Option<Value>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+    if value == Value::Object(serde_json::Map::new()) {
+        Ok(None)
+    } else {
+        Ok(Some(value))
+    }
+}
