@@ -2112,6 +2112,8 @@ pub enum SourcePresentationHint {
     Emphasize,
     #[serde(rename = "deemphasize")]
     Deemphasize,
+    #[serde(other)]
+    Unknown,
 }
 
 /// A Stackframe contains the source location.
