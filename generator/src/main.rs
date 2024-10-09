@@ -636,13 +636,8 @@ impl Enum {
             dst.line("#[non_exhaustive]");
         }
 
-        let mut exhaustive = self.exhaustive;
         dst.line(format!("pub enum {} {{", name));
         for (i, value) in self.variants.iter().enumerate() {
-            if name == "SourcePresentationHint" {
-                exhaustive = false;
-            }
-
             if let Some(desc) = &self.variant_descriptions {
                 assert!(desc.len() == self.variants.len());
                 dst.indented_doc(&desc[i]);
@@ -650,6 +645,11 @@ impl Enum {
             dst.indented(format!("#[serde(rename = \"{value}\")]"));
             dst.indented(format!("{},", to_pascal_case(value)));
         }
+        let exhaustive = if name == "SourcePresentationHint" {
+            false
+        } else {
+            self.exhaustive
+        };
         if !exhaustive {
             dst.indented("#[serde(other)]");
             dst.indented("Unknown,");
