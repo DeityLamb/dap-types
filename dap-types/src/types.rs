@@ -2180,6 +2180,8 @@ pub enum StackFramePresentationHint {
     Label,
     #[serde(rename = "subtle")]
     Subtle,
+    #[serde(other)]
+    Unknown,
 }
 
 /// A `Scope` is a named container for variables. Optionally a scope can map to a source or a range within a source.
@@ -3076,6 +3078,8 @@ pub enum DisassembledInstructionPresentationHint {
     Normal,
     #[serde(rename = "invalid")]
     Invalid,
+    #[serde(other)]
+    Unknown,
 }
 
 /// Logical areas that can be invalidated by the `invalidated` event.

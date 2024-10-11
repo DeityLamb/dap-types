@@ -645,12 +645,7 @@ impl Enum {
             dst.indented(format!("#[serde(rename = \"{value}\")]"));
             dst.indented(format!("{},", to_pascal_case(value)));
         }
-        let exhaustive = if name == "SourcePresentationHint" {
-            false
-        } else {
-            self.exhaustive
-        };
-        if !exhaustive {
+        if !self.exhaustive || name.ends_with("PresentationHint") {
             dst.indented("#[serde(other)]");
             dst.indented("Unknown,");
         }
