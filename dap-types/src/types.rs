@@ -2,6 +2,7 @@
 // To regenerate from schema, run `cargo run -p generator`.
 
 use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
 
 /// On error (whenever `success` is false), the body can provide more details.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -226,7 +227,7 @@ pub enum OutputEventCategory {
 }
 
 /// Support for keeping an output log organized by grouping related messages.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum OutputEventGroup {
     /// Start a new group in expanded mode. Subsequent output events are members of the group and should be shown indented.
     /// The `output` attribute becomes the name of the group and is not indented.
@@ -279,7 +280,7 @@ pub struct ModuleEvent {
 }
 
 /// The reason for the event.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum ModuleEventReason {
     #[serde(rename = "new")]
     New,
@@ -301,7 +302,7 @@ pub struct LoadedSourceEvent {
 }
 
 /// The reason for the event.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum LoadedSourceEventReason {
     #[serde(rename = "new")]
     New,
@@ -340,7 +341,7 @@ pub struct ProcessEvent {
 }
 
 /// Describes how the debug engine started debugging this process.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum ProcessEventStartMethod {
     /// Process was launched under the debugger.
     #[serde(rename = "launch")]
@@ -505,7 +506,7 @@ pub struct RunInTerminalRequestArguments {
 }
 
 /// What kind of terminal to launch. Defaults to `integrated` if not specified.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum RunInTerminalRequestArgumentsKind {
     #[serde(rename = "integrated")]
     Integrated,
@@ -540,7 +541,7 @@ pub struct StartDebuggingRequestArguments {
 }
 
 /// Indicates whether the new debug session should be started with a `launch` or `attach` request.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum StartDebuggingRequestArgumentsRequest {
     #[serde(rename = "launch")]
     Launch,
@@ -1121,7 +1122,7 @@ pub struct VariablesArguments {
 }
 
 /// Filter to limit the child variables to either named or indexed. If omitted, both types are fetched.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum VariablesArgumentsFilter {
     #[serde(rename = "indexed")]
     Indexed,
@@ -2027,7 +2028,7 @@ pub struct ColumnDescriptor {
 }
 
 /// Datatype of values in this column. Defaults to `string` if not specified.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum ColumnDescriptorType {
     #[serde(rename = "string")]
     String,
@@ -2104,7 +2105,7 @@ pub struct Source {
 
 /// A hint for how to present the source in the UI.
 /// A value of `deemphasize` can be used to indicate that the source is not available or that it is skipped on stepping.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum SourcePresentationHint {
     #[serde(rename = "normal")]
     Normal,
@@ -2172,7 +2173,7 @@ pub struct StackFrame {
 
 /// A hint for how to present this frame in the UI.
 /// A value of `label` can be used to indicate that the frame is an artificial frame that is used as a visual label or separator. A value of `subtle` can be used to change the appearance of a frame in a 'subtle' way.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum StackFramePresentationHint {
     #[serde(rename = "normal")]
     Normal,
@@ -2520,7 +2521,7 @@ pub struct FunctionBreakpoint {
 }
 
 /// This enumeration defines all possible access types for data breakpoints.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum DataBreakpointAccessType {
     #[serde(rename = "read")]
     Read,
@@ -2655,7 +2656,7 @@ pub struct Breakpoint {
 ///
 /// - `pending`: Indicates a breakpoint might be verified in the future, but the adapter cannot verify it in the current state.
 ///  - `failed`: Indicates a breakpoint was not able to be verified, and the adapter does not believe it can be verified without intervention.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum BreakpointReason {
     #[serde(rename = "pending")]
     Pending,
@@ -2664,7 +2665,7 @@ pub enum BreakpointReason {
 }
 
 /// The granularity of one 'step' in the stepping requests `next`, `stepIn`, `stepOut`, and `stepBack`.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum SteppingGranularity {
     /// The step should allow the program to run until the current statement has finished executing.
     /// The meaning of a statement is determined by the adapter and it may be considered equivalent to a line.
@@ -2794,7 +2795,7 @@ pub struct CompletionItem {
 }
 
 /// Some predefined types for the CompletionItem. Please note that not all clients have specific icons for all of them.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum CompletionItemType {
     #[serde(rename = "method")]
     Method,
@@ -2837,7 +2838,7 @@ pub enum CompletionItemType {
 }
 
 /// Names of checksum algorithms that may be supported by a debug adapter.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum ChecksumAlgorithm {
     #[serde(rename = "MD5")]
     Md5,
@@ -2953,7 +2954,7 @@ pub struct ExceptionOptions {
 /// always: always breaks,
 /// unhandled: breaks when exception unhandled,
 /// userUnhandled: breaks if the exception is not handled by user code.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum ExceptionBreakMode {
     #[serde(rename = "never")]
     Never,
@@ -3072,7 +3073,7 @@ pub struct DisassembledInstruction {
 /// A hint for how to present the instruction in the UI.
 ///
 /// A value of `invalid` may be used to indicate this instruction is 'filler' and cannot be reached by the program. For example, unreadable memory addresses may be presented is 'invalid.'
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]
 pub enum DisassembledInstructionPresentationHint {
     #[serde(rename = "normal")]
     Normal,
