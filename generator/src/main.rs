@@ -170,6 +170,7 @@ fn write_events(types: &[ProtocolType]) -> String {
 fn write_types(types: &[ProtocolType]) -> String {
     let mut writer = Writer::default();
     writer.line("use serde::{Deserialize, Serialize};");
+    writer.line("use schemars::JsonSchema;");
     writer.finished_object();
     for ty in types {
         if ty.name.ends_with("Request") {
@@ -628,7 +629,7 @@ impl Enum {
             dst.doc(doc);
         }
         if self.exhaustive {
-            dst.line("#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]");
+            dst.line("#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, JsonSchema)]");
         } else {
             dst.line("#[derive(PartialEq, Eq, Debug, Hash, Clone, Deserialize, Serialize)]");
         }
