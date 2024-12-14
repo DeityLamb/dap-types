@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
@@ -58,7 +56,32 @@ pub enum Events {
     Invalidated(InvalidatedEvent),
     Memory(MemoryEvent),
     #[serde(untagged)]
-    Other(HashMap<String, Value>),
+    Other((String, Value)),
+}
+
+impl std::fmt::Display for Events {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Events::Initialized(_) => write!(f, "Initialized"),
+            Events::Stopped(_) => write!(f, "Stopped"),
+            Events::Continued(_) => write!(f, "Continued"),
+            Events::Exited(_) => write!(f, "Exited"),
+            Events::Terminated(_) => write!(f, "Terminated"),
+            Events::Thread(_) => write!(f, "Thread"),
+            Events::Output(_) => write!(f, "Output"),
+            Events::Breakpoint(_) => write!(f, "Breakpoint"),
+            Events::Module(_) => write!(f, "Module"),
+            Events::LoadedSource(_) => write!(f, "LoadedSource"),
+            Events::Process(_) => write!(f, "Process"),
+            Events::Capabilities(_) => write!(f, "Capabilities"),
+            Events::ProgressStart(_) => write!(f, "ProgressStart"),
+            Events::ProgressUpdate(_) => write!(f, "ProgressUpdate"),
+            Events::ProgressEnd(_) => write!(f, "ProgressEnd"),
+            Events::Invalidated(_) => write!(f, "Invalidated"),
+            Events::Memory(_) => write!(f, "Memory"),
+            Events::Other((name, _)) => write!(f, "{}", name.as_str()),
+        }
+    }
 }
 
 fn deserialize_empty_object<'de, D>(deserializer: D) -> Result<Option<Value>, D::Error>
