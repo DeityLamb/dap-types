@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
@@ -36,6 +34,12 @@ pub struct Response {
     pub body: Option<Value>,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct OtherEvent {
+    event: String,
+    body: Value,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "event", content = "body")]
 #[serde(rename_all = "camelCase")]
@@ -58,7 +62,7 @@ pub enum Events {
     Invalidated(InvalidatedEvent),
     Memory(MemoryEvent),
     #[serde(untagged)]
-    Other(HashMap<String, Value>),
+    Other(OtherEvent),
 }
 
 impl std::fmt::Display for Events {
@@ -81,14 +85,7 @@ impl std::fmt::Display for Events {
             Events::ProgressEnd(_) => write!(f, "ProgressEnd"),
             Events::Invalidated(_) => write!(f, "Invalidated"),
             Events::Memory(_) => write!(f, "Memory"),
-            Events::Other(obj) => write!(
-                f,
-                "Other event names: {}",
-                obj.keys()
-                    .map(|s| s.as_str())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
+            Events::Other(other) => write!(f, "{}", other.event.as_str()),
         }
     }
 }
@@ -102,5 +99,48 @@ where
         Ok(None)
     } else {
         Ok(Some(value))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_events_deserialization() {
+        // Test a known event type (Stopped)
+        let stopped_json = json!({
+            "event": "stopped",
+            "body": {
+                "reason": "breakpoint",
+                "threadId": 1
+            }
+        });
+        let stopped_event: Events = serde_json::from_value(stopped_json).unwrap();
+        assert!(matches!(stopped_event, Events::Stopped(_)));
+
+        // Test an unknown event type
+        let unknown_json = json!({
+            "event": "customEvent",
+            "body": {
+                "someField": "someValue",
+                "anotherField": 42
+            }
+        });
+        let unknown_event: Events = serde_json::from_value(unknown_json).unwrap();
+
+        if let Events::Other(other) = unknown_event {
+            assert_eq!(other.event, "customEvent");
+            assert_eq!(
+                other.body,
+                json!({
+                    "someField": "someValue",
+                    "anotherField": 42
+                })
+            );
+        } else {
+            panic!("Expected Other variant for unknown event");
+        }
     }
 }
