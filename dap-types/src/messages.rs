@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
@@ -56,7 +58,7 @@ pub enum Events {
     Invalidated(InvalidatedEvent),
     Memory(MemoryEvent),
     #[serde(untagged)]
-    Other((String, Value)),
+    Other(HashMap<String, Value>),
 }
 
 impl std::fmt::Display for Events {
@@ -79,7 +81,14 @@ impl std::fmt::Display for Events {
             Events::ProgressEnd(_) => write!(f, "ProgressEnd"),
             Events::Invalidated(_) => write!(f, "Invalidated"),
             Events::Memory(_) => write!(f, "Memory"),
-            Events::Other((name, _)) => write!(f, "{}", name.as_str()),
+            Events::Other(obj) => write!(
+                f,
+                "Other event names: {}",
+                obj.keys()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
         }
     }
 }
