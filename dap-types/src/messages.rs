@@ -36,8 +36,8 @@ pub struct Response {
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct OtherEvent {
-    event: String,
-    body: Value,
+    pub event: String,
+    pub body: Value,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
