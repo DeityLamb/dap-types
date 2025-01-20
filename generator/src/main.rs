@@ -646,6 +646,10 @@ impl Enum {
             dst.indented(format!("#[serde(rename = \"{value}\")]"));
             dst.indented(format!("{},", to_pascal_case(value)));
         }
+        if name.ends_with("StackFramePresentationHint") {
+            dst.indented(format!("#[serde(rename = \"deemphasize\")]"));
+            dst.indented("Deemphasize,");
+        }
         if !self.exhaustive || name.ends_with("PresentationHint") {
             dst.indented("#[serde(other)]");
             dst.indented("Unknown,");
