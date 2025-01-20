@@ -2181,6 +2181,8 @@ pub enum StackFramePresentationHint {
     Label,
     #[serde(rename = "subtle")]
     Subtle,
+    #[serde(rename = "deemphasize")]
+    Deemphasize,
     #[serde(other)]
     Unknown,
 }
