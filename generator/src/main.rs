@@ -588,7 +588,7 @@ impl Object {
         if let Some(doc) = &self.doc {
             dst.doc(&doc);
         }
-        dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]");
+        dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]");
         let mut pending = Vec::new();
         if self.fields.is_empty() {
             dst.line(format!("pub struct {};", name));
@@ -710,19 +710,19 @@ pub enum ModuleId {
     String(String),
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Hash)]
 #[serde(transparent)]
 pub struct AttachRequestArguments {
     pub raw: serde_json::Value,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Hash)]
 #[serde(transparent)]
 pub struct LaunchRequestArguments {
     pub raw: serde_json::Value,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Hash)]
 #[serde(transparent)]
 pub struct RestartArguments {
     pub raw: serde_json::Value,
