@@ -59,6 +59,7 @@ impl Default for Capabilities {
             supports_terminate_threads_request: None,
             supports_value_formatting_options: None,
             supports_write_memory_request: None,
+            supports_ansistyling: None,
         }
     }
 }
@@ -181,6 +182,7 @@ impl Capabilities {
             breakpoint_modes: other
                 .breakpoint_modes
                 .or_else(|| self.breakpoint_modes.clone()),
+            supports_ansistyling: other.supports_ansistyling.or(self.supports_ansistyling),
         }
     }
 }

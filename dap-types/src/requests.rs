@@ -395,7 +395,7 @@ impl Request for LoadedSources {
     type Response = crate::LoadedSourcesResponse;
 }
 
-/// Evaluates the given expression in the context of the topmost stack frame.
+/// Evaluates the given expression in the context of a stack frame.
 /// The expression has access to any variables and arguments that are in scope.
 pub enum Evaluate {}
 
@@ -487,4 +487,13 @@ impl Request for Disassemble {
     const COMMAND: &'static str = "disassemble";
     type Arguments = crate::DisassembleArguments;
     type Response = crate::DisassembleResponse;
+}
+
+/// Looks up information about a location reference previously returned by the debug adapter.
+pub enum Locations {}
+
+impl Request for Locations {
+    const COMMAND: &'static str = "locations";
+    type Arguments = crate::LocationsArguments;
+    type Response = crate::LocationsResponse;
 }

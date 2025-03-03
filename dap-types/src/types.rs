@@ -111,7 +111,7 @@ pub struct ContinuedEvent {
     /// The thread which was continued.
     #[serde(rename = "threadId")]
     pub thread_id: u64,
-    /// If `allThreadsContinued` is true, a debug adapter can announce that all threads have continued.
+    /// If omitted or set to `true`, this event signals to the client that all threads have been resumed. The value `false` indicates that not all threads were resumed.
     #[serde(rename = "allThreadsContinued")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -169,6 +169,10 @@ pub struct OutputEvent {
     #[serde(default)]
     pub category: Option<OutputEventCategory>,
     /// The output to report.
+    ///
+    /// ANSI escape sequences may be used to influence text color and styling if `supportsANSIStyling` is present in both the adapter's `Capabilities` and the client's `InitializeRequestArguments`. A client may strip any unrecognized ANSI sequences.
+    ///
+    /// If the `supportsANSIStyling` capabilities are not both true, then the client should display the output literally.
     #[serde(rename = "output")]
     pub output: String,
     /// Support for keeping an output log organized by grouping related messages.
@@ -201,6 +205,13 @@ pub struct OutputEvent {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub data: Option<serde_json::Value>,
+    /// A reference that allows the client to request the location where the new value is declared. For example, if the logged value is function pointer, the adapter may be able to look up the function's location. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "locationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub location_reference: Option<u64>,
 }
 
 /// The output category. If not specified or if the category is not understood by the client, `console` is assumed.
@@ -318,7 +329,7 @@ pub struct ProcessEvent {
     /// The logical name of the process. This is usually the full path to process's executable file. Example: /home/example/myproj/program.js.
     #[serde(rename = "name")]
     pub name: String,
-    /// The system process id of the debugged process. This property is missing for non-system processes.
+    /// The process ID of the debugged process, as assigned by the operating system. This property should be omitted for logical processes that do not map to operating system processes on the machine.
     #[serde(rename = "systemProcessId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -630,6 +641,11 @@ pub struct InitializeRequestArguments {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub supports_start_debugging_request: Option<bool>,
+    /// The client will interpret ANSI escape sequences in the display of `OutputEvent.output` and `Variable.value` fields when `Capabilities.supportsANSIStyling` is also enabled.
+    #[serde(rename = "supportsANSIStyling")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub supports_ansistyling: Option<bool>,
 }
 
 /// Determines in what format paths are specified. The default is `path`, which is the native format.
@@ -912,7 +928,7 @@ pub struct ContinueArguments {
 /// Response to `continue` request.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct ContinueResponse {
-    /// The value true (or a missing property) signals to the client that all threads have been resumed. The value false indicates that not all threads were resumed.
+    /// If omitted or set to `true`, this response signals to the client that all threads have been resumed. The value `false` indicates that not all threads were resumed.
     #[serde(rename = "allThreadsContinued")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -1052,7 +1068,7 @@ pub struct StackTraceArguments {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub levels: Option<u64>,
-    /// Specifies details on how to format the stack frames.
+    /// Specifies details on how to format the returned `StackFrame.name`. The debug adapter may format requested details in any way that would make sense to a developer.
     /// The attribute is only honored by a debug adapter if the corresponding capability `supportsValueFormattingOptions` is true.
     #[serde(rename = "format")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1169,6 +1185,8 @@ pub struct SetVariableResponse {
     #[serde(default)]
     pub type_: Option<String>,
     /// If `variablesReference` is > 0, the new value is structured and its children can be retrieved by passing `variablesReference` to the `variables` request as long as execution remains suspended. See 'Lifetime of Object References' in the Overview section for details.
+    ///
+    /// If this property is included in the response, any `variablesReference` previously associated with the updated variable, and those of its children, are no longer valid.
     #[serde(rename = "variablesReference")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -1194,6 +1212,13 @@ pub struct SetVariableResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub memory_reference: Option<String>,
+    /// A reference that allows the client to request the location where the new value is declared. For example, if the new value is function pointer, the adapter may be able to look up the function's location. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "valueLocationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub value_location_reference: Option<u64>,
 }
 
 /// Arguments for `source` request.
@@ -1388,6 +1413,13 @@ pub struct EvaluateResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub memory_reference: Option<String>,
+    /// A reference that allows the client to request the location where the returned value is declared. For example, if a function pointer is returned, the adapter may be able to look up the function's location. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "valueLocationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub value_location_reference: Option<u64>,
 }
 
 /// Arguments for `setExpression` request.
@@ -1454,6 +1486,13 @@ pub struct SetExpressionResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub memory_reference: Option<String>,
+    /// A reference that allows the client to request the location where the new value is declared. For example, if the new value is function pointer, the adapter may be able to look up the function's location. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "valueLocationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub value_location_reference: Option<u64>,
 }
 
 /// Arguments for `stepInTargets` request.
@@ -1660,6 +1699,40 @@ pub struct DisassembleResponse {
     /// The list of disassembled instructions.
     #[serde(rename = "instructions")]
     pub instructions: Vec<DisassembledInstruction>,
+}
+
+/// Arguments for `locations` request.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+pub struct LocationsArguments {
+    /// Location reference to resolve.
+    #[serde(rename = "locationReference")]
+    pub location_reference: u64,
+}
+
+/// Response to `locations` request.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+pub struct LocationsResponse {
+    /// The source containing the location; either `source.path` or `source.sourceReference` must be specified.
+    #[serde(rename = "source")]
+    pub source: Source,
+    /// The line number of the location. The client capability `linesStartAt1` determines whether it is 0- or 1-based.
+    #[serde(rename = "line")]
+    pub line: u64,
+    /// Position of the location within the `line`. It is measured in UTF-16 code units and the client capability `columnsStartAt1` determines whether it is 0- or 1-based. If no column is given, the first position in the start line is assumed.
+    #[serde(rename = "column")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub column: Option<u64>,
+    /// End line of the location, present if the location refers to a range.  The client capability `linesStartAt1` determines whether it is 0- or 1-based.
+    #[serde(rename = "endLine")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub end_line: Option<u64>,
+    /// End position of the location within `endLine`, present if the location refers to a range. It is measured in UTF-16 code units and the client capability `columnsStartAt1` determines whether it is 0- or 1-based.
+    #[serde(rename = "endColumn")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub end_column: Option<u64>,
 }
 
 /// Information about the capabilities of a debug adapter.
@@ -1872,6 +1945,11 @@ pub struct Capabilities {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub breakpoint_modes: Option<Vec<BreakpointMode>>,
+    /// The debug adapter supports ANSI escape sequences in styling of `OutputEvent.output` and `Variable.value` fields.
+    #[serde(rename = "supportsANSIStyling")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub supports_ansistyling: Option<bool>,
 }
 
 /// An `ExceptionBreakpointsFilter` is shown in the UI as an filter option for configuring how exceptions are dealt with.
@@ -2148,7 +2226,7 @@ pub struct StackFrame {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub end_column: Option<u64>,
-    /// Indicates whether this frame can be restarted with the `restart` request. Clients should only use this if the debug adapter supports the `restart` request and the corresponding capability `supportsRestartRequest` is true. If a debug adapter has this capability, then `canRestart` defaults to `true` if the property is absent.
+    /// Indicates whether this frame can be restarted with the `restartFrame` request. Clients should only use this if the debug adapter supports the `restart` request and the corresponding capability `supportsRestartFrame` is true. If a debug adapter has this capability, then `canRestart` defaults to `true` if the property is absent.
     #[serde(rename = "canRestart")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
@@ -2319,6 +2397,20 @@ pub struct Variable {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub memory_reference: Option<String>,
+    /// A reference that allows the client to request the location where the variable is declared. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "declarationLocationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub declaration_location_reference: Option<u64>,
+    /// A reference that allows the client to request the location where the variable's value is declared. For example, if the variable contains a function pointer, the adapter may be able to look up the function's location. This should be present only if the adapter is likely to be able to resolve the location.
+    ///
+    /// This reference shares the same lifetime as the `variablesReference`. See 'Lifetime of Object References' in the Overview section for details.
+    #[serde(rename = "valueLocationReference")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    pub value_location_reference: Option<u64>,
 }
 
 /// Properties of a variable that can be used to determine how to render the variable in the UI.
