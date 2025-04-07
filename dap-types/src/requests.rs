@@ -361,7 +361,7 @@ pub enum Threads {}
 
 impl Request for Threads {
     const COMMAND: &'static str = "threads";
-    type Arguments = ();
+    type Arguments = crate::ThreadsArgument;
     type Response = crate::ThreadsResponse;
 }
 

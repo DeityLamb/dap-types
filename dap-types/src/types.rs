@@ -664,6 +664,10 @@ pub enum InitializeRequestArgumentsPathFormat {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct ConfigurationDoneArguments {}
 
+/// Arguments for `Threads` request.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+pub struct ThreadsArgument {}
+
 /// Arguments for `disconnect` request.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct DisconnectArguments {
