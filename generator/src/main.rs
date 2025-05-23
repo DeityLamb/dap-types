@@ -94,6 +94,7 @@ fn write_requests(types: &[ProtocolType]) -> String {
         }
         let command = o.find_field("command").unwrap().ty.as_enum().single_value();
         let arguments = match &o.find_field("arguments").unwrap().ty {
+            Type::Any if command == "threads" => "crate::ThreadsArgument".to_owned(),
             Type::Any => "()".to_owned(),
             Type::Basic(args) => format!("crate::{args}"),
             _ => panic!("bad arguments type for {}", ty.name),
@@ -591,7 +592,7 @@ impl Object {
         dst.line("#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]");
         let mut pending = Vec::new();
         if self.fields.is_empty() {
-            dst.line(format!("pub struct {};", name));
+            dst.line(format!("pub struct {} {{}}", name));
         } else {
             dst.line(format!("pub struct {} {{", name));
             for field in &self.fields {
@@ -601,6 +602,12 @@ impl Object {
                     dst.indented_doc(doc);
                 }
                 dst.indented(format!("#[serde(rename = \"{}\")]", field.name));
+
+                // GDB doesn't always send a threads name so we default to an empty string
+                if name == "Thread" && field.name == "name" {
+                    dst.indented("#[serde(default)]");
+                }
+
                 let clean_name = to_snake_case(&field.name);
                 if field.required {
                     dst.indented(format!("pub {}: {},", clean_name, ty));
@@ -727,6 +734,10 @@ pub struct LaunchRequestArguments {
 pub struct RestartArguments {
     pub raw: serde_json::Value,
 }
+
+/// Arguments for `Threads` request.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+pub struct ThreadsArgument {}
 ";
 
 const REQUEST_TRAIT: &str = "
