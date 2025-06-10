@@ -604,7 +604,11 @@ impl Object {
                 dst.indented(format!("#[serde(rename = \"{}\")]", field.name));
 
                 // GDB doesn't always send a threads name so we default to an empty string
-                if name == "Thread" && field.name == "name" {
+                // Debugpy doesn't send a cwd in a run in terminal request if the client doesn't provide it in the launch request
+                // An empty string indicates that we should use the project's cwd
+                if (name == "Thread" && field.name == "name")
+                    || (name == "RunInTerminalRequestArguments" && field.name == "cwd")
+                {
                     dst.indented("#[serde(default)]");
                 }
 

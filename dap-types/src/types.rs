@@ -500,6 +500,7 @@ pub struct RunInTerminalRequestArguments {
     pub title: Option<String>,
     /// Working directory for the command. For non-empty, valid paths this typically results in execution of a change directory command.
     #[serde(rename = "cwd")]
+    #[serde(default)]
     pub cwd: String,
     /// List of arguments. The first argument is the command to run.
     #[serde(rename = "args")]
