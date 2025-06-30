@@ -1,7 +1,7 @@
 use std::{collections::HashSet, path::PathBuf};
 
 use indexmap::IndexMap;
-use serde_json::{Map, Value};
+use serde_json::{json, Map, Value};
 
 fn main() {
     let schema = load_schema();
@@ -286,12 +286,22 @@ fn translate_object(defs: &Map<String, Value>, def: &Value) -> Object {
 }
 
 fn generate_field(defs: &Map<String, Value>, name: &str, def: &Value, required: bool) -> Field {
+    let ty = if name == "hitBreakpointIds" {
+        // Note: i64 is used instead of u64 here because delve returns -1 when a panic is hit.
+        // Everywhere else we assume (though the spec doesn't specify) that breakpoint ids are u64s.
+        // https://github.com/go-delve/delve/pull/4027
+        assert_eq!(def.get("type"), Some(&json!("array")));
+        assert_eq!(def.get("items"), Some(&json!({ "type": "integer" })));
+        Type::Vec(Box::new("i64".into()))
+    } else {
+        translate_type(defs, def)
+    };
     Field {
         doc: def
             .get("description")
             .map(|x| x.as_str().unwrap().to_owned()),
         name: name.to_owned(),
-        ty: translate_type(defs, def),
+        ty,
         required,
     }
 }
