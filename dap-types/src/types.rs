@@ -48,7 +48,7 @@ pub struct StoppedEvent {
     #[serde(rename = "threadId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub thread_id: Option<u64>,
+    pub thread_id: Option<i64>,
     /// A value of true hints to the client that this event should not change the focus.
     #[serde(rename = "preserveFocusHint")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -110,7 +110,7 @@ pub enum StoppedEventReason {
 pub struct ContinuedEvent {
     /// The thread which was continued.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If omitted or set to `true`, this event signals to the client that all threads have been resumed. The value `false` indicates that not all threads were resumed.
     #[serde(rename = "allThreadsContinued")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -145,7 +145,7 @@ pub struct ThreadEvent {
     pub reason: ThreadEventReason,
     /// The identifier of the thread.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
 }
 
 /// The reason for the event.
@@ -461,7 +461,7 @@ pub struct InvalidatedEvent {
     #[serde(rename = "threadId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub thread_id: Option<u64>,
+    pub thread_id: Option<i64>,
     /// If specified, the client only needs to refetch data related to this stack frame (and the `threadId` is ignored).
     #[serde(rename = "stackFrameId")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -918,7 +918,7 @@ pub struct SetInstructionBreakpointsResponse {
 pub struct ContinueArguments {
     /// Specifies the active thread. If the debug adapter supports single thread execution (see `supportsSingleThreadExecutionRequests`) and the argument `singleThread` is true, only the thread with this ID is resumed.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, execution is resumed only for the thread with given `threadId`.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -941,7 +941,7 @@ pub struct ContinueResponse {
 pub struct NextArguments {
     /// Specifies the thread for which to resume execution for one step (of the given granularity).
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, all other suspended threads are not resumed.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -959,7 +959,7 @@ pub struct NextArguments {
 pub struct StepInArguments {
     /// Specifies the thread for which to resume execution for one step-into (of the given granularity).
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, all other suspended threads are not resumed.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -982,7 +982,7 @@ pub struct StepInArguments {
 pub struct StepOutArguments {
     /// Specifies the thread for which to resume execution for one step-out (of the given granularity).
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, all other suspended threads are not resumed.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1000,7 +1000,7 @@ pub struct StepOutArguments {
 pub struct StepBackArguments {
     /// Specifies the thread for which to resume execution for one step backwards (of the given granularity).
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, all other suspended threads are not resumed.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1018,7 +1018,7 @@ pub struct StepBackArguments {
 pub struct ReverseContinueArguments {
     /// Specifies the active thread. If the debug adapter supports single thread execution (see `supportsSingleThreadExecutionRequests`) and the `singleThread` argument is true, only the thread with this ID is resumed.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// If this flag is true, backward execution is resumed only for the thread with given `threadId`.
     #[serde(rename = "singleThread")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1039,7 +1039,7 @@ pub struct RestartFrameArguments {
 pub struct GotoArguments {
     /// Set the goto target for this thread.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// The location where the debuggee will continue to run.
     #[serde(rename = "targetId")]
     pub target_id: u64,
@@ -1050,7 +1050,7 @@ pub struct GotoArguments {
 pub struct PauseArguments {
     /// Pause execution for this thread.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
 }
 
 /// Arguments for `stackTrace` request.
@@ -1058,7 +1058,7 @@ pub struct PauseArguments {
 pub struct StackTraceArguments {
     /// Retrieve the stacktrace for this thread.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
     /// The index of the first frame to return; if omitted frames start at 0.
     #[serde(rename = "startFrame")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1264,7 +1264,7 @@ pub struct TerminateThreadsArguments {
     #[serde(rename = "threadIds")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub thread_ids: Option<Vec<u64>>,
+    pub thread_ids: Option<Vec<i64>>,
 }
 
 /// Arguments for `modules` request.
@@ -1570,7 +1570,7 @@ pub struct CompletionsResponse {
 pub struct ExceptionInfoArguments {
     /// Thread for which exception information should be retrieved.
     #[serde(rename = "threadId")]
-    pub thread_id: u64,
+    pub thread_id: i64,
 }
 
 /// Response to `exceptionInfo` request.
@@ -2124,7 +2124,7 @@ pub enum ColumnDescriptorType {
 pub struct Thread {
     /// Unique identifier for the thread.
     #[serde(rename = "id")]
-    pub id: u64,
+    pub id: i64,
     /// The name of the thread.
     #[serde(rename = "name")]
     #[serde(default)]

@@ -286,13 +286,16 @@ fn translate_object(defs: &Map<String, Value>, def: &Value) -> Object {
 }
 
 fn generate_field(defs: &Map<String, Value>, name: &str, def: &Value, required: bool) -> Field {
-    let ty = if name == "hitBreakpointIds" {
+    let ty = if name == "hitBreakpointIds" || name == "threadIds" {
         // Note: i64 is used instead of u64 here because delve returns -1 when a panic is hit.
         // Everywhere else we assume (though the spec doesn't specify) that breakpoint ids are u64s.
         // https://github.com/go-delve/delve/pull/4027
         assert_eq!(def.get("type"), Some(&json!("array")));
         assert_eq!(def.get("items"), Some(&json!({ "type": "integer" })));
         Type::Vec(Box::new("i64".into()))
+    } else if name == "threadId" {
+        assert_eq!(def.get("type"), Some(&json!("integer")));
+        Type::Basic("i64".into())
     } else {
         translate_type(defs, def)
     };
@@ -607,7 +610,7 @@ impl Object {
             dst.line(format!("pub struct {} {{", name));
             for field in &self.fields {
                 let inline_name = format!("{}{}", name, to_pascal_case(&field.name));
-                let ty = field.ty.stringify(inline_name, &mut pending);
+                let mut ty = field.ty.stringify(inline_name, &mut pending);
                 if let Some(doc) = &field.doc {
                     dst.indented_doc(doc);
                 }
@@ -620,6 +623,9 @@ impl Object {
                     || (name == "RunInTerminalRequestArguments" && field.name == "cwd")
                 {
                     dst.indented("#[serde(default)]");
+                }
+                if name == "Thread" && field.name == "id" {
+                    ty = "i64".to_string();
                 }
 
                 let clean_name = to_snake_case(&field.name);
