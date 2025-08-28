@@ -2213,7 +2213,7 @@ pub struct StackFrame {
     #[serde(default)]
     pub source: Option<Source>,
     /// The line within the source of the frame. If the source attribute is missing or doesn't exist, `line` is 0 and should be ignored by the client.
-    #[serde(rename = "line")]
+    #[serde(rename = "line", deserialize_with = "negative_to_zero")]
     pub line: u64,
     /// Start position of the range covered by the stack frame. It is measured in UTF-16 code units and the client capability `columnsStartAt1` determines whether it is 0- or 1-based. If attribute `source` is missing or doesn't exist, `column` is 0 and should be ignored by the client.
     #[serde(rename = "column")]
@@ -3266,3 +3266,16 @@ pub struct RestartArguments {
 /// Arguments for `Threads` request.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct ThreadsArgument {}
+
+
+fn negative_to_zero<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
+    let v = i64::deserialize(deserializer)?;
+    if v < 0 {
+        Ok(0)
+    } else {
+        Ok(v as u64)
+    }
+}
